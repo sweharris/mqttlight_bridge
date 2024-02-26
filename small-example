@@ -1,0 +1,55 @@
+#!/bin/bash
+#
+# This is an example to show the bridge code in action.  We
+# pretend to be a single bulb and we just reflect the state we're
+# told to set.
+
+# Startup state
+power=OFF
+lum=50
+
+while [ 1 ]
+do
+  # Each time round the loop, send updates back to the bridge.
+  # We'll just update every light, because turning one light on
+  # may impact others
+  
+  echo "LIST#test"
+  echo "LIGHT#test#$power#$lum"
+
+  # Wait for a command.  If we don't get one in five seconds then go back
+  # round the loop, which will send a new update anyway
+  # This is a simple way of sending periodic updates to the gateway without
+  # needing coprocesses.  It means that updates after a command
+  # is done immediately but an outside event (there are none here, but
+  # there could be in a real example) will be delayed no longer than 5
+  # seconds.
+  read -t 5 input
+
+  # This is a cheap and nasty way of splitting the command up; it works...
+
+  OIFS="$IFS"
+  IFS="#"
+  set -- $input
+  declare -u command=$1
+  declare -u name=$2
+  declare -u state=$3
+  bright=$4
+  IFS="$OIFS"
+
+  # We only care about the LIGHT command
+  if [ "$command" == "LIGHT" ]
+  then
+    # Ignore states that are not on/off
+    case $state in
+      OFF) power=OFF ;;
+       ON) power=ON  ;;
+    esac
+
+    # Brightness only impacts power, where we set the volume
+    if [[ $bright =~ ^[0-9]+$ ]]
+    then
+      lum=$bright
+    fi
+  fi
+done

@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# We're just going to create a monitor screen power on/off switch
+
+export DISPLAY=:0
+
+NAME=monitor
+declare -u SWITCH=OFF
+
+while [ 1 ]
+do
+  # Each time round the loop, send updates back to the bridge.
+  
+  # We need to know if the monitor is on or not
+  SWITCH=$(xset q | sed -n 's/.* Monitor is //p')
+
+  echo "LIGHT#$NAME#$SWITCH#"
+
+  input=""
+  read -t 5 input
+
+  # This is a cheap and nasty way of splitting the command up; it works
+  # because none of the lights can have a space in their name.
+
+  OIFS="$IFS"
+  IFS="#"
+  set -- $input
+  declare -u command=$1
+  declare -u name=$2
+  declare -u state=$3
+  bright=$4
+  IFS="$OIFS"
+  
+  # We only care about the LIGHT command
+  if [ "$command" == "LIGHT" ]
+  then
+    # Ignore states that are not on/off
+    case $state in
+      OFF) xset dpms force off ;;
+       ON) xset dpms force on  ;;
+    esac > /dev/null 2>&1
+  fi
+done

@@ -180,7 +180,7 @@ LIST#monitor
 LIGHT#monitor#ON#
 ```
 
-Importantly, the name of the light sent in the MONITOR command will be used
+Importantly, the name of the light sent in the LIGHT command will be used
 to create the topic name.  e.g.  `LIGHT#monitor#ON#` will cause an ON message
 to be sent on topic `mqttlight/monitor/status`.   This _is_ case sensitive;
 "monitor" is different to "Monitor"
@@ -230,3 +230,10 @@ This would cause two commands to be sent to the child
 you should be careful that actions taken in response to "ON" without a
 brightness value should not change the brightness by mistake.
 
+I've seen Home Assistant get confused; I originally created an `mqtt` light
+as on/off and then later changed it to one with brightness.  HA then wasn't
+sure how to present it; the GUI presented on/off and brightness slider, and
+the slider did change cause a brightness command to be sent... but it never
+reflected the actual brightness.   I found I had to stop HA and edit the
+`.storage/core.restore_state` to remove the existing entry for the light
+before it would pick up the new definition.

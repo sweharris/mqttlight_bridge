@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+var hostname string
+
 // This handles the LIGHT status update sent from the child process
 //
 //	name on/off brightness
@@ -42,6 +44,7 @@ func set_light_status(status []string) {
 		light.Bri = bri
 	}
 	publish(name, "bright_state", strconv.Itoa(bri))
+	publish(name, "host", hostname)
 
 	Lights.Store(name, light)
 }
@@ -93,6 +96,13 @@ func on_read(s string) {
 }
 
 func main() {
+	h, err := os.Hostname()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Warning: could not get hostname", err)
+		h = "unknown"
+	}
+	hostname = h
+
 	mqtt_server := flag.String("server", "localhost", "MQTT server")
 	mqtt_port := flag.Int("port", 1883, "MQTT Port")
 	mqtt_user := flag.String("user", "", "MQTT Username")

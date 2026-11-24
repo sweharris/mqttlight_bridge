@@ -31,7 +31,7 @@ type Light_State struct {
 	Name string
 }
 
-// We will index lights based on their name.  
+// We will index lights based on their name.
 var Lights sync.Map
 
 func NewLight(name string) Light_State {
@@ -48,7 +48,7 @@ func get_or_create_light(name string) Light_State {
 	if !ok {
 		log.Println("Creating new light:", name)
 		light = NewLight(name)
-		Lights.Store(name,light)
+		Lights.Store(name, light)
 	}
 	return light.(Light_State)
 }
